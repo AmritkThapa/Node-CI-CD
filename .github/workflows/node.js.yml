@@ -46,10 +46,10 @@ jobs:
         chmod 600 private-key.pem
 
         # Fetch and add the server's SSH host key to the known_hosts file
-        ssh-keyscan -H $HOST_IP >> ~/.ssh/known_hosts
+        # ssh-keyscan -H $HOST_IP >> ~/.ssh/known_hosts
           
         # Now copy the files
-        scp -i private-key.pem -r * $SSH_USER@$HOST_IP:/home/$SSH_USER/projects/node/
+        scp -i private-key.pem -r * $SSH_USER@$HOST_IP:/home/$SSH_USER/projects/node/hello/
 
         # SSH into the server and restart the app
         ssh -i private-key.pem $SSH_USER@$HOST_IP << 'EOF'
