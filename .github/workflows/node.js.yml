@@ -44,25 +44,26 @@ jobs:
         PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         HOST_IP: ${{ secrets.HOST_IP }}
         SSH_USER: ${{ secrets.SSH_USER }}
+        WORK_DIR: ${{ secrets.WORK_DIR }}
+        MAIN_BRANCH: ${{ secrets.MAIN_BRANCH }}
       run: |
+        # Store private key to a file
         echo "$PRIVATE_KEY" > private-key.pem
         chmod 600 private-key.pem
 
-        # Create the .ssh directory in the current user's home directory
+        # Create the .ssh directory and add server's SSH host key to known_hosts
         mkdir -p ~/.ssh
-
-        # Check if private key file was created successfully
-        cat private-key.pem
-        
-        # Fetch and add the server's SSH host key to the known_hosts file
         ssh-keyscan -H $HOST_IP >> ~/.ssh/known_hosts
-          
-        # Now copy the files
-        scp -v -i private-key.pem -r * $SSH_USER@$HOST_IP:/home/$SSH_USER/projects/node/hello/
 
-        # SSH into the server and restart the app
-        ssh -vvv -i private-key.pem $SSH_USER@$HOST_IP << 'EOF'
-          cd /home/$SSH_USER/projects/node/hello/
-          npm install 
+        # SSH into the server, pull the latest changes, and restart the app
+        ssh -vvv -i private-key.pem $SSH_USER@$HOST_IP << EOF
+          cd $WORK_DIR
+          git checkout $MAIN_BRANCH
+          git pull
+          npm install
           pm2 restart index.js || pm2 start index.js --name "node-app"
         EOF
+
+    - name: Cleanup
+      run: rm -f private-key.pem
+
