@@ -37,7 +37,7 @@ jobs:
       run: npm test
 
     - name: Check private key content
-      run: echo "$PRIVATE_KEY"
+      run: echo "${{ secrets.SSH_PRIVATE_KEY }}"
 
     - name: Deploy to Server
       env:
